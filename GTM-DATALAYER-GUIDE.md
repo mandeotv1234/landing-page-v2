@@ -1,0 +1,198 @@
+# Hướng dẫn gắn Zalo Pixel vào landing-page-v2 qua Google Tag Manager
+
+Repo này là bản sao của `landing-page` (ZTech demo), nhưng **không gọi SDK/`ztrq` trực
+tiếp trong code** — toàn bộ việc fire pixel được chuyển hẳn sang Google Tag Manager (GTM),
+dùng custom tag template `zalo-pixel-gtm-template` (repo cạnh bên,
+`../zalo-pixel-gtm-template/template.tpl`).
+
+```
+landing-page-v2 (React)
+  └─ usePixel().fire(eventName, params)
+        └─ window.dataLayer.push({ event: 'zp_track', zp_event_name, zp_pixel_id, ...params })
+              └─ GTM Trigger: Custom Event = zp_track
+                    └─ GTM Tag: Zalo Pixel — Track Event  (template.tpl, Pixel V2)
+                          └─ ztracker.js → log.adtimaserver.vn/ptrck/log
+```
+
+Việc **duy nhất** code JS làm là push dataLayer — không biết gì về `ztracker.js`,
+`s.zzcdn.me`, hay `log.adtimaserver.vn`. Toàn bộ quyết định "fire cái gì, khi nào" nằm
+trong container GTM, cấu hình qua giao diện, không cần sửa code mỗi khi đổi trigger.
+
+---
+
+## Checklist
+
+```
+[ ] Bước 1 — Tạo container GTM, thay GTM-XXXXXXX trong index.html
+[ ] Bước 2 — Import template.tpl
+[ ] Bước 3 — Tạo biến (1 Constant + 10 Data Layer Variable)
+[ ] Bước 4 — Tạo 2 Trigger
+[ ] Bước 5 — Tạo Tag Initialize + Tag Track Event (Tag Sequencing)
+[ ] Bước 6 — Preview mode trên localhost
+[ ] Bước 7 — Publish + lọc traffic bot gtm-msr.appspot.com
+[ ] Bước 8 — Verify trên Network + dataLayer console
+```
+
+---
+
+## Bước 1 — Tạo container GTM
+
+1. [tagmanager.google.com](https://tagmanager.google.com) → **Create Account** → chọn
+   container type **Web**.
+2. Copy container ID (dạng `GTM-XXXXXXX`), dán đè vào **2 chỗ** trong `index.html` của repo
+   này (đoạn `<script>` trong `<head>` và `<iframe>` trong `<noscript>` ngay sau `<body>`) —
+   đây là snippet chuẩn Google đưa ra khi tạo container, đừng tự viết lại.
+
+> Container GTM độc lập với Pixel ID của Zalo — container quản lý toàn bộ tag trên site
+> (có thể có GA4, Ads conversion... khác), pixel chỉ là 1 tag bên trong.
+
+## Bước 2 — Import Custom Template
+
+1. Trong GTM: **Templates (Mẫu) → Tag Templates (Mẫu thẻ) → New (Mới)**
+2. Menu ⋮ góc trên phải → **Import** → chọn file
+   `../zalo-pixel-gtm-template/template.tpl`
+3. **Save**
+
+(Khi template đã publish lên Community Template Gallery, có thể thay bằng
+**Search Gallery** → tìm "Zalo Pixel" thay vì import file thủ công.)
+
+## Bước 3 — Tạo biến (Variables)
+
+### 3a. Biến hằng — Pixel ID
+
+**Variables → User-Defined Variables → New → Constant**
+- Tên: `Zalo Pixel ID`
+- Giá trị: `7525140531349815296` (khớp `PIXEL_ID` trong `src/hooks/usePixel.js`)
+
+### 3b. Biến lớp dữ liệu (Data Layer Variable)
+
+**Variables → User-Defined Variables → New → Data Layer Variable**, tạo đủ 10 biến —
+tên và version phải khớp chính xác với payload mà `usePixel.js` push:
+
+| Tên biến GTM | Tên biến lớp dữ liệu | Giá trị mặc định |
+|---|---|---|
+| `DLV - zp_event_name` | `zp_event_name` | *(để trống)* |
+| `DLV - zp_pixel_id` | `zp_pixel_id` | *(để trống)* |
+| `DLV - zp_value` | `value` | `0` |
+| `DLV - zp_currency` | `currency` | `VND` |
+| `DLV - zp_content_id` | `content_id` | *(để trống)* |
+| `DLV - zp_content_name` | `content_name` | *(để trống)* |
+| `DLV - zp_content_type` | `content_type` | *(để trống)* |
+| `DLV - zp_quantity` | `quantity` | *(để trống)* |
+| `DLV - zp_query` | `query` | *(để trống — bắt buộc cho `Search`)* |
+| `DLV - zp_contents` | `contents` | *(để trống — mảng `{id, quantity}`)* |
+
+Mỗi biến: chọn **Data Layer Version 2**.
+
+> `contents` không map qua SIMPLE_TABLE của template (như hướng dẫn chung ở
+> `zalo-pixel-gtm-template/GTM-SETUP.md`) — ở đây landing page đã tự push sẵn đúng mảng
+> `{id, quantity}`, nên field `contents` của tag Track Event dùng thẳng biến
+> `{{DLV - zp_contents}}` qua ô **Additional parameters** (key `contents`, value
+> `{{DLV - zp_contents}}`) thay vì bảng nhập tay.
+
+## Bước 4 — Tạo Trigger
+
+### Trigger 1 — Initialization
+
+- Loại: **Initialization — All Pages**
+- Tên: `Trigger - Initialization - All Pages`
+
+### Trigger 2 — Custom Event `zp_track`
+
+- Loại: **Custom Event**
+- Tên sự kiện: `zp_track`
+- Tên trigger: `Trigger - zp_track`
+
+## Bước 5 — Tạo Tag
+
+### Tag 1 — Zalo Pixel - Initialize
+
+| Field | Giá trị |
+|---|---|
+| Loại thẻ | Zalo Pixel |
+| Action | Initialize |
+| Pixel ID | `{{Zalo Pixel ID}}` |
+| Trigger | `Trigger - Initialization - All Pages` |
+
+### Tag 2 — Zalo Pixel - Track Event
+
+| Field | Giá trị |
+|---|---|
+| Loại thẻ | Zalo Pixel |
+| Action | Track event |
+| Event type | Custom event |
+| Custom event name | `{{DLV - zp_event_name}}` |
+| Pixel ID | `{{Zalo Pixel ID}}` |
+| content_id | `{{DLV - zp_content_id}}` |
+| content_name | `{{DLV - zp_content_name}}` |
+| content_type | `{{DLV - zp_content_type}}` |
+| currency | `{{DLV - zp_currency}}` |
+| value | `{{DLV - zp_value}}` |
+| quantity | `{{DLV - zp_quantity}}` |
+| Additional parameters | `query` → `{{DLV - zp_query}}` <br> `contents` → `{{DLV - zp_contents}}` |
+| Trigger | `Trigger - zp_track` |
+
+**Tag Sequencing** (cuối form, mục "Advanced Settings"):
+☑ Fire a tag before this tag fires → `Zalo Pixel - Initialize`
+☑ Don't fire this tag if the setup tag fails
+
+> **landing-page-v2 không dùng React Router / Next / Nuxt kiểu SPA route-based** — mọi
+> modal/section nằm trên 1 trang, nên **không cần** tag Pageview (SPA). Nếu bạn fork repo
+> này thành multi-page SPA, xem thêm action `Pageview (SPA)` + trigger **History Change**
+> trong `zalo-pixel-gtm-template/README.md`.
+
+## Bước 6 — Preview mode trên localhost
+
+1. Chạy demo: `npm install && npm run dev` (mặc định `http://localhost:5173`)
+2. GTM → **Preview** → nhập URL localhost → **Connect**
+3. Trên tab preview mới mở: bấm 1 nút bất kỳ (vd. "Thêm giỏ") → quay lại panel GTM Preview
+4. Tab **Tags** → kiểm tra `Zalo Pixel - Initialize` và `Zalo Pixel - Track Event` đều
+   **Fired** ✓, không có tag nào **Not Fired** mà lẽ ra phải fire.
+5. Tab **Variables** → chọn đúng sự kiện `zp_track` trong timeline → xem giá trị thực tế
+   của từng `DLV - zp_*` để đối chiếu với tham số mong đợi (bảng ở `PIXEL-EVENTS.md`).
+
+## Bước 7 — Publish + lọc traffic bot
+
+1. **Submit → đặt tên version (vd. "v1 — Zalo Pixel setup") → Publish.**
+2. Google sẽ định kỳ tải lại container đã publish từ `gtm-msr.appspot.com` để quét
+   malware — tag Zalo Pixel sẽ fire **thật** trong lượt quét đó, tạo conversion giả.
+   Đây là hành vi bình thường của **mọi** container GTM, không phải lỗi của site này.
+   **Lọc:** mở cả 2 trigger ở Bước 4 → **Add Exception** → biến built-in `{{Page Hostname}}`
+   → điều kiện **does not equal** `gtm-msr.appspot.com`. Chi tiết:
+   `zalo-pixel-gtm-template/README.md` mục "Traffic quét bot của Google".
+
+## Bước 8 — Verify
+
+DevTools → tab **Network** → filter `adtimaserver.vn`:
+
+| Request | Khi nào xuất hiện |
+|---|---|
+| `GET ztracker.js` | Ngay khi tag Initialize fire (status 200) |
+| `GET /tracklp?type=pageview&pId=...` | Cùng lúc — pageview tự động |
+| `GET /ptrck/events?pixelId=...&url=...` | Cùng lúc — tải config webElement (không liên quan track() của GTM) |
+| `GET /ptrck/log?pId=...&eId=...` | Mỗi lần dataLayer push `zp_track` thành công (Pixel V2: **luôn** fire, không cần tạo conversion trước) |
+
+Console:
+```javascript
+window.dataLayer.filter(e => e.event === 'zp_track')
+// → mỗi phần tử có zp_event_name, zp_pixel_id, value, currency, content_id, contents, ...
+```
+
+---
+
+## Lưu ý quan trọng
+
+- **Không cấu hình trùng cơ chế.** Nếu một hành động đã được track qua GTM (dataLayer +
+  tag Track Event), đừng đồng thời tạo Event Builder webElement rule (id/class/nội dung)
+  cho cùng hành động đó trong Zalo Ads Manager — conversion sẽ bị đếm 2 lần. Xem
+  `PIXEL-EVENTS.md` để biết id/class của từng nút — dùng để cấu hình **Click Trigger**
+  trong GTM (`{{Click ID}}` / `{{Click Classes}}` built-in variables), KHÔNG dùng để cấu
+  hình thêm Event Builder song song.
+- **`contents` là mảng `{id, quantity}`**, không phải chuỗi — khớp đúng payload thật mà
+  `usePixel.js` push (xem `App.jsx` / `hooks.js` các nơi gọi `fire('AddToCart', {...
+  contents: cart.map(i => ({id: i.id, quantity: i.qty}))})`).
+- **Không gửi PII thô** (tên/SĐT/email người dùng nhập ở form) qua dataLayer — xem mục
+  cuối `PIXEL-EVENTS.md`.
+- Pixel ID trong **biến Constant `Zalo Pixel ID`** (GTM) phải trùng với `PIXEL_ID` trong
+  `src/hooks/usePixel.js` — đổi 1 chỗ mà quên chỗ kia là nguyên nhân phổ biến nhất khiến
+  dashboard Zalo Ads Manager không thấy conversion nào dù Network tab vẫn thấy request.
