@@ -8,8 +8,9 @@ export default function CheckoutModal({ cart, onClose, fire }) {
   const [form, setForm] = useState({ name: '', phone: '', address: '', card: '', exp: '', cvv: '' })
 
   const total = cart.reduce((s, i) => s + i.price * i.qty, 0)
-  const contents = cart.map(i => ({ id: i.id, quantity: i.qty }))
-  const contentId = contents.map(i => i.id).join(',')
+  const contentId = cart.map(i => i.id).join(',')
+  const contentNames = cart.map(i => i.name)
+  const totalQuantity = cart.reduce((s, i) => s + i.qty, 0)
 
   // setStep unmounts the step vua submit (swap sang step ke) — defer qua setTimeout(0) de
   // listener click cap document cua ztracker kip chay xong truoc khi React detach DOM.
@@ -31,10 +32,10 @@ export default function CheckoutModal({ cart, onClose, fire }) {
     fire('Purchase', {
       currency: 'VND',
       value: total,
-      contents,
+      contents: contentNames,
       content_type: 'product',
       content_id: contentId,
-      quantity: contents.reduce((s, i) => s + i.quantity, 0),
+      quantity: totalQuantity,
     })
     setTimeout(() => setStep(4), 0)
   }

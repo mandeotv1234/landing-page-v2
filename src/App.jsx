@@ -38,7 +38,7 @@ export default function App() {
       content_id: cart.map(i => i.id).join(','),
       value: cart.reduce((s, i) => s + i.price * i.qty, 0),
       currency: 'VND',
-      contents: cart.map(i => ({ id: i.id, quantity: i.qty })),
+      contents: cart.map(i => i.name),
     })
   }
 

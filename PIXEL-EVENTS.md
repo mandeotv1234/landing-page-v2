@@ -86,3 +86,8 @@ id/class vẫn đầy đủ, chỉ thiếu nội dung:
 - **Không gửi PII thô** (tên/SĐT/email người dùng nhập ở form) lên pixel — các form Lead/
   Register/Subscribe/Apply chỉ gửi metadata mô tả hành động, không gửi giá trị người dùng
   gõ vào input.
+- `contents` là **mảng string tên sản phẩm** (vd. `['ZPhone Pro 15', 'ZBuds Pro 3']`),
+  không phải mảng object `{id, quantity}` — dùng cho `AddToWishlist`, `InitiateCheckout`,
+  `Purchase`. `content_id` (chuỗi id nối dấu phẩy) và `quantity` (tổng số lượng) gửi riêng.
+  Field `contents` trong `template.tpl` là TEXT (gán biến `{{DLV - zp_contents}}`), không
+  phải SIMPLE_TABLE — xem `GTM-DATALAYER-GUIDE.md`.

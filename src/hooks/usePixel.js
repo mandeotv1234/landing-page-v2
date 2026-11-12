@@ -44,8 +44,10 @@ const PARAM_KEYS = [
 
 function buildEcommerce(zaloEventName, params) {
   if (!GA4_EVENT_MAP[zaloEventName]) return null
+  // contents giờ là list string tên sản phẩm (không còn {id, quantity}) — map sang
+  // item_name, không có item_id/quantity riêng từng dòng nữa.
   const items = params.contents
-    ? params.contents.map((c) => ({ item_id: c.id, quantity: c.quantity }))
+    ? params.contents.map((name) => ({ item_name: name }))
     : params.content_id
       ? [{ item_id: params.content_id, item_name: params.content_name, quantity: params.quantity ?? 1 }]
       : null

@@ -79,17 +79,17 @@ tên và version phải khớp chính xác với payload mà `usePixel.js` push:
 | `DLV - zp_content_type` | `content_type` | *(để trống)* |
 | `DLV - zp_quantity` | `quantity` | *(để trống)* |
 | `DLV - zp_query` | `query` | *(để trống — bắt buộc cho `Search`)* |
-| `DLV - zp_contents` | `contents` | *(để trống — mảng `{id, quantity}`)* |
+| `DLV - zp_contents` | `contents` | *(để trống — mảng string tên sản phẩm)* |
 
 Mỗi biến: chọn **Data Layer Version 2**. Không cần biến đọc Pixel ID từ dataLayer — Pixel
 ID luôn lấy từ biến Constant `{{Zalo Pixel ID}}` ở mọi tag, `usePixel.js` không push
 `zp_pixel_id` nữa.
 
-> `contents` không map qua SIMPLE_TABLE của template (như hướng dẫn chung ở
-> `zalo-pixel-gtm-template/GTM-SETUP.md`) — ở đây landing page đã tự push sẵn đúng mảng
-> `{id, quantity}`, nên field `contents` của tag Track Event dùng thẳng biến
-> `{{DLV - zp_contents}}` qua ô **Additional parameters** (key `contents`, value
-> `{{DLV - zp_contents}}`) thay vì bảng nhập tay.
+> `contents` là field **TEXT** trong `template.tpl` (không phải SIMPLE_TABLE, SIMPLE_TABLE
+> không gán biến được) — gán thẳng `{{DLV - zp_contents}}` vào field `contents` dưới mục
+> "Custom event parameters" của tag Track Event. `usePixel.js` push `contents` là **mảng
+> string tên sản phẩm** (vd. `['ZPhone Pro 15', 'ZBuds Pro 3']`), không phải mảng object
+> `{id, quantity}` — xem `src/components/Products.jsx`/`CheckoutModal.jsx`.
 
 > **Giống cách Meta/TikTok Pixel làm qua GTM:** `usePixel.js` push dataLayer `event` bằng
 > **tên chuẩn GA4** cho 9 event có tương đương (`view_item`, `add_to_cart`,
@@ -150,7 +150,8 @@ Zalo (8 event còn lại). Dùng 1 trigger regex gộp hết:
 | currency | `{{DLV - zp_currency}}` |
 | value | `{{DLV - zp_value}}` |
 | quantity | `{{DLV - zp_quantity}}` |
-| Additional parameters | `query` → `{{DLV - zp_query}}` <br> `contents` → `{{DLV - zp_contents}}` |
+| contents *(mục "Custom event parameters")* | `{{DLV - zp_contents}}` |
+| Additional parameters | `query` → `{{DLV - zp_query}}` |
 | Trigger | `Trigger - Zalo Pixel Events` |
 
 **Tag Sequencing** (cuối form, mục "Advanced Settings"):
@@ -218,9 +219,11 @@ window.dataLayer.filter(e => e.zp_event_name)
   `PIXEL-EVENTS.md` để biết id/class của từng nút — dùng để cấu hình **Click Trigger**
   trong GTM (`{{Click ID}}` / `{{Click Classes}}` built-in variables), KHÔNG dùng để cấu
   hình thêm Event Builder song song.
-- **`contents` là mảng `{id, quantity}`**, không phải chuỗi — khớp đúng payload thật mà
-  `usePixel.js` push (xem `App.jsx` / `hooks.js` các nơi gọi `fire('AddToCart', {...
-  contents: cart.map(i => ({id: i.id, quantity: i.qty}))})`).
+- **`contents` là mảng string tên sản phẩm** (vd. `['ZPhone Pro 15', 'ZBuds Pro 3']`),
+  không phải mảng object `{id, quantity}` — khớp đúng payload thật mà `usePixel.js` push
+  (xem `App.jsx`/`CheckoutModal.jsx`/`Products.jsx` các nơi gọi
+  `fire('Purchase', {... contents: cart.map(i => i.name)})`). `content_id` (chuỗi id nối
+  dấu phẩy) và `quantity` (tổng số lượng) gửi riêng, không nằm trong `contents`.
 - **Không gửi PII thô** (tên/SĐT/email người dùng nhập ở form) qua dataLayer — xem mục
   cuối `PIXEL-EVENTS.md`.
 - Pixel ID trong **biến Constant `Zalo Pixel ID`** (GTM) phải trùng với `PIXEL_ID` trong
