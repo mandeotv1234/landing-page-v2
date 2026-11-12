@@ -35,6 +35,7 @@ export default function App() {
     setTimeout(() => setShowCart(false), 0)
     setShowCheckout(true)
     fire('InitiateCheckout', {
+      content_id: cart.map(i => i.id).join(','),
       value: cart.reduce((s, i) => s + i.price * i.qty, 0),
       currency: 'VND',
       contents: cart.map(i => ({ id: i.id, quantity: i.qty })),

@@ -9,6 +9,7 @@ export default function CheckoutModal({ cart, onClose, fire }) {
 
   const total = cart.reduce((s, i) => s + i.price * i.qty, 0)
   const contents = cart.map(i => ({ id: i.id, quantity: i.qty }))
+  const contentId = contents.map(i => i.id).join(',')
 
   // setStep unmounts the step vua submit (swap sang step ke) — defer qua setTimeout(0) de
   // listener click cap document cua ztracker kip chay xong truoc khi React detach DOM.
@@ -22,7 +23,7 @@ export default function CheckoutModal({ cart, onClose, fire }) {
   // 1 nut nen QC khong test rieng tung event duoc.
   const submitPaymentInfo = (e) => {
     e.preventDefault()
-    fire('AddPaymentInfo', { currency: 'VND', value: total })
+    fire('AddPaymentInfo', { currency: 'VND', value: total, content_id: contentId })
     setTimeout(() => setStep(3), 0)
   }
 
@@ -32,6 +33,8 @@ export default function CheckoutModal({ cart, onClose, fire }) {
       value: total,
       contents,
       content_type: 'product',
+      content_id: contentId,
+      quantity: contents.reduce((s, i) => s + i.quantity, 0),
     })
     setTimeout(() => setStep(4), 0)
   }

@@ -32,7 +32,7 @@ Quy ước chung:
 
 | # | Event | File / hàm | Cách trigger trên web | Param fire() | id | class | Nội dung |
 |---|---|---|---|---|---|---|---|
-| 1 | `AddPaymentInfo` | `CheckoutModal.jsx` → `submitPaymentInfo` | Checkout modal bước 2 (Thanh toán), nhập xong số thẻ/ngày hết hạn/CVV rồi bấm "Lưu thẻ & xem lại đơn →" — **nút riêng, không trùng với `Purchase`** | `{ currency, value }` | `btn-add-payment-info` | `btn-add-payment-info` | "Lưu thẻ & xem lại đơn →" |
+| 1 | `AddPaymentInfo` | `CheckoutModal.jsx` → `submitPaymentInfo` | Checkout modal bước 2 (Thanh toán), nhập xong số thẻ/ngày hết hạn/CVV rồi bấm "Lưu thẻ & xem lại đơn →" — **nút riêng, không trùng với `Purchase`** | `{ currency, value, content_id }` | `btn-add-payment-info` | `btn-add-payment-info` | "Lưu thẻ & xem lại đơn →" |
 | 2 | `AddToCart` | `Products.jsx` → `addToCart` | Bấm "Thêm giỏ" ở card sản phẩm, hoặc "Thêm vào giỏ hàng" trong modal chi tiết | `{ content_id, content_type, quantity, value, currency }` | `btn-add-to-cart` | `btn-add-to-cart` | "Thêm giỏ" (card) / "Thêm vào giỏ hàng" (modal) |
 | 3 | `AddToWishlist` | `Products.jsx` → `toggleWishlist` | Bấm icon trái tim ở card sản phẩm hoặc modal chi tiết | `{ content_id, contents }` | `btn-wishlist` | `btn-wishlist` | — (icon-only) |
 | 4 | `CompleteRegistration` | `Sections.jsx` → `handleRegister` | Form "Tạo tài khoản", bấm "Tạo tài khoản miễn phí" | `{ content_id: 'membership', content_name: 'Đăng ký thành viên ZTech' }` | `btn-register` | `btn-register` | "Tạo tài khoản miễn phí" |
@@ -40,9 +40,9 @@ Quy ước chung:
 | 6 | `CustomizeProduct` | `Sections.jsx` → `handleCustomize` | Section "Tùy chỉnh sản phẩm": bấm đổi màu (4 nút tròn) hoặc đổi dung lượng (4 nút 128GB/256GB/512GB/1TB) | `{ content_id: 'sp001', content_name: 'ZPhone Pro 15', content_type: 'product' }` | `btn-customize` | `btn-customize` | — (nút màu, icon-only) / "128GB"...`1TB` (nút dung lượng, có text) |
 | 7 | `Donate` | `Sections.jsx` → `handleDonate` | Section "Quỹ ZTech for Education", bấm 1 trong 4 mức tiền (50k/100k/200k/500k) | `{ value, currency: 'VND' }` | `btn-donate` | `btn-donate` | "50k" / "100k" / "200k" / "500k" |
 | 8 | `FindLocation` | `Sections.jsx` → `handleLocation` | Bấm "Tìm cửa hàng gần tôi" | `{ content_name: 'Tìm cửa hàng gần nhất' }` | `btn-find-location` | `btn-find-location` | "Tìm cửa hàng gần tôi" |
-| 9 | `InitiateCheckout` | `App.jsx` → `handleCheckout` | Mở giỏ hàng (icon cart ở header) → bấm "Tiến hành thanh toán" | `{ value, currency, contents }` | `btn-initiate-checkout` | `btn-initiate-checkout` | "Tiến hành thanh toán" |
+| 9 | `InitiateCheckout` | `App.jsx` → `handleCheckout` | Mở giỏ hàng (icon cart ở header) → bấm "Tiến hành thanh toán" | `{ content_id, value, currency, contents }` | `btn-initiate-checkout` | `btn-initiate-checkout` | "Tiến hành thanh toán" |
 | 10 | `Lead` | `Sections.jsx` → `handleLead` | Form "Đăng ký tư vấn miễn phí", bấm "Gửi yêu cầu tư vấn" | `{ content_name: 'Đăng ký tư vấn miễn phí', value: 500000, currency: 'VND' }` | `btn-lead` | `btn-lead` | "Gửi yêu cầu tư vấn" |
-| 11 | `Purchase` | `CheckoutModal.jsx` → `confirmPurchase` | Checkout modal bước 3 (Xác nhận, màn review đơn hàng mới), bấm "Xác nhận đặt hàng ..." — **nút riêng, sau khi `AddPaymentInfo` đã fire ở bước 2** | `{ currency, value, contents, content_type }` | `btn-purchase` | `btn-purchase` | "Xác nhận đặt hàng {giá}" |
+| 11 | `Purchase` | `CheckoutModal.jsx` → `confirmPurchase` | Checkout modal bước 3 (Xác nhận, màn review đơn hàng mới), bấm "Xác nhận đặt hàng ..." — **nút riêng, sau khi `AddPaymentInfo` đã fire ở bước 2** | `{ currency, value, contents, content_type, content_id, quantity }` | `btn-purchase` | `btn-purchase` | "Xác nhận đặt hàng {giá}" |
 | 12 | `Schedule` | `Sections.jsx` → `handleSchedule` | Bấm "Đặt lịch" (cạnh form tư vấn) | `{ content_name: 'Đặt lịch tư vấn tại cửa hàng' }` | `btn-schedule` | `btn-schedule` | "Đặt lịch" |
 | 13 | `Search` | `Header.jsx` → `handleSearch` | Gõ từ khoá rồi bấm nút "Tìm" (desktop, cạnh ô input) hoặc nút "Tìm" (menu mobile), hoặc Enter trong ô input | `{ query }` | `btn-search` | `btn-search` | "Tìm" |
 | 14 | `StartTrial` | `Hero.jsx` → `handleStartTrial` | Bấm "Dùng thử 30 ngày" | `{ content_id: 'trial-zphone-pro-15', content_name: 'Dùng thử 30 ngày' }` | `btn-start-trial` | `btn-start-trial` | "Dùng thử 30 ngày" |
@@ -70,13 +70,19 @@ id/class vẫn đầy đủ, chỉ thiếu nội dung:
 
 ## Lưu ý param
 
-- Tham khảo `SUGGESTED_PARAMS` trong `zalo-ads-v2`
-  (`src/app/modules/pixel/services/event-template.service.ts`) cho các event có khai báo
-  sẵn: `ViewContent`, `AddToCart`, `AddToWishlist`, `InitiateCheckout`, `AddPaymentInfo`,
-  `Purchase`, `Lead`, `Search`. Các event còn lại (`Contact`, `CompleteRegistration`,
-  `CustomizeProduct`, `Donate`, `FindLocation`, `Schedule`, `StartTrial`,
-  `SubmitApplication`, `Subscribe`) không có suggested params trong zalo-ads-v2, nên dùng
-  `content_name`/`content_id` + `value`/`currency` khi hợp lý (đã áp dụng ở trên).
+- Đã rà soát lại từng event với `SUGGESTED_PARAMS` trong `zalo-ads-v2`
+  (`src/app/modules/pixel/services/event-template.service.ts`, cũng chính là default khi
+  dashboard sinh custom-code snippet — `snippet-builder.service.ts` + `event-setup-modal
+  .component.ts`) cho 8 event có khai báo sẵn: `ViewContent`, `AddToCart`, `AddToWishlist`,
+  `InitiateCheckout`, `AddPaymentInfo`, `Purchase`, `Lead`, `Search`. Đủ hết — đã bổ sung
+  `content_id` cho `InitiateCheckout`/`AddPaymentInfo` và `content_id`+`quantity` cho
+  `Purchase` (trước đó thiếu, dùng `contents` thay thế nhưng suggested vẫn muốn
+  `content_id` riêng — nay có cả 2, `content_id` là chuỗi id sản phẩm trong giỏ nối dấu
+  phẩy). Các event còn lại (`Contact`, `CompleteRegistration`, `CustomizeProduct`, `Donate`,
+  `FindLocation`, `Schedule`, `StartTrial`, `SubmitApplication`, `Subscribe`) không có
+  suggested params trong zalo-ads-v2 (tất cả 10 param đều optional, không event nào bắt
+  buộc theo code), nên dùng `content_name`/`content_id` + `value`/`currency` khi hợp lý
+  (đã áp dụng ở trên).
 - **Không gửi PII thô** (tên/SĐT/email người dùng nhập ở form) lên pixel — các form Lead/
   Register/Subscribe/Apply chỉ gửi metadata mô tả hành động, không gửi giá trị người dùng
   gõ vào input.
