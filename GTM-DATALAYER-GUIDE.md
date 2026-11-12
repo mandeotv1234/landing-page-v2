@@ -7,10 +7,10 @@ dùng custom tag template `zalo-pixel-gtm-template` (repo cạnh bên,
 
 ```
 landing-page-v2 (React)
-  └─ usePixel().fire(eventName, params)
-        └─ window.dataLayer.push({ event: 'zp_track', zp_event_name, zp_pixel_id, ...params })
-              └─ GTM Trigger: Custom Event = zp_track
-                    └─ GTM Tag: Zalo Pixel — Track Event  (template.tpl, Pixel V2)
+  └─ usePixel().fire(zaloEventName, params)
+        └─ window.dataLayer.push({ event: GA4_NAME_or_zaloEventName, zp_event_name, ...params, ecommerce })
+              └─ GTM Trigger: Custom Event, regex khớp 1 trong 17 tên
+                    └─ GTM Tag: Zalo Pixel — Track Event  (template.tpl, Pixel V2, đọc zp_event_name + field phẳng)
                           └─ ztracker.js → dev-log.adtima.vn/ptrck/log
 ```
 
@@ -66,13 +66,12 @@ trong container GTM, cấu hình qua giao diện, không cần sửa code mỗi 
 
 ### 3b. Biến lớp dữ liệu (Data Layer Variable)
 
-**Variables → User-Defined Variables → New → Data Layer Variable**, tạo đủ 10 biến —
+**Variables → User-Defined Variables → New → Data Layer Variable**, tạo đủ 9 biến —
 tên và version phải khớp chính xác với payload mà `usePixel.js` push:
 
 | Tên biến GTM | Tên biến lớp dữ liệu | Giá trị mặc định |
 |---|---|---|
 | `DLV - zp_event_name` | `zp_event_name` | *(để trống)* |
-| `DLV - zp_pixel_id` | `zp_pixel_id` | *(để trống)* |
 | `DLV - zp_value` | `value` | `0` |
 | `DLV - zp_currency` | `currency` | `VND` |
 | `DLV - zp_content_id` | `content_id` | *(để trống)* |
@@ -82,13 +81,25 @@ tên và version phải khớp chính xác với payload mà `usePixel.js` push:
 | `DLV - zp_query` | `query` | *(để trống — bắt buộc cho `Search`)* |
 | `DLV - zp_contents` | `contents` | *(để trống — mảng `{id, quantity}`)* |
 
-Mỗi biến: chọn **Data Layer Version 2**.
+Mỗi biến: chọn **Data Layer Version 2**. Không cần biến đọc Pixel ID từ dataLayer — Pixel
+ID luôn lấy từ biến Constant `{{Zalo Pixel ID}}` ở mọi tag, `usePixel.js` không push
+`zp_pixel_id` nữa.
 
 > `contents` không map qua SIMPLE_TABLE của template (như hướng dẫn chung ở
 > `zalo-pixel-gtm-template/GTM-SETUP.md`) — ở đây landing page đã tự push sẵn đúng mảng
 > `{id, quantity}`, nên field `contents` của tag Track Event dùng thẳng biến
 > `{{DLV - zp_contents}}` qua ô **Additional parameters** (key `contents`, value
 > `{{DLV - zp_contents}}`) thay vì bảng nhập tay.
+
+> **Giống cách Meta/TikTok Pixel làm qua GTM:** `usePixel.js` push dataLayer `event` bằng
+> **tên chuẩn GA4** cho 9 event có tương đương (`view_item`, `add_to_cart`,
+> `add_to_wishlist`, `begin_checkout`, `add_payment_info`, `purchase`, `generate_lead`,
+> `sign_up`, `search`), kèm object `ecommerce: {currency, value, items}` lồng nhau theo
+> đúng chuẩn GA4 ecommerce — để sau này site có thêm tag GA4/Meta/TikTok thì dùng chung
+> được pushes này, không cần code thêm. Tag Zalo Pixel ở đây **không đọc `ecommerce`**, chỉ
+> đọc các biến phẳng `DLV - zp_*` ở trên (không đổi) — `zp_event_name` luôn có mặt dù
+> `event` là tên GA4 hay tên gốc Zalo, nên Custom event name của tag vẫn dùng
+> `{{DLV - zp_event_name}}` như cũ, không cần Lookup Table.
 
 ## Bước 4 — Tạo Trigger
 
@@ -97,11 +108,18 @@ Mỗi biến: chọn **Data Layer Version 2**.
 - Loại: **Initialization — All Pages**
 - Tên: `Trigger - Initialization - All Pages`
 
-### Trigger 2 — Custom Event `zp_track`
+### Trigger 2 — Custom Event (17 tên, dùng regex)
+
+`event` giờ không còn cố định là `zp_track` — nó là tên GA4 chuẩn (9 event) hoặc tên gốc
+Zalo (8 event còn lại). Dùng 1 trigger regex gộp hết:
 
 - Loại: **Custom Event**
-- Tên sự kiện: `zp_track`
-- Tên trigger: `Trigger - zp_track`
+- Tên sự kiện: bật **"Sử dụng khớp regex"** (Use regex matching), nhập:
+  ```
+  ^(view_item|add_to_cart|add_to_wishlist|begin_checkout|add_payment_info|purchase|generate_lead|sign_up|search|Contact|CustomizeProduct|Donate|FindLocation|Schedule|StartTrial|SubmitApplication|Subscribe)$
+  ```
+- Kích hoạt trên: Một số sự kiện tùy chỉnh — khớp regex trên
+- Tên trigger: `Trigger - Zalo Pixel Events`
 
 ## Bước 5 — Tạo Tag
 
@@ -130,7 +148,7 @@ Mỗi biến: chọn **Data Layer Version 2**.
 | value | `{{DLV - zp_value}}` |
 | quantity | `{{DLV - zp_quantity}}` |
 | Additional parameters | `query` → `{{DLV - zp_query}}` <br> `contents` → `{{DLV - zp_contents}}` |
-| Trigger | `Trigger - zp_track` |
+| Trigger | `Trigger - Zalo Pixel Events` |
 
 **Tag Sequencing** (cuối form, mục "Advanced Settings"):
 ☑ Fire a tag before this tag fires → `Zalo Pixel - Initialize`
@@ -148,8 +166,9 @@ Mỗi biến: chọn **Data Layer Version 2**.
 3. Trên tab preview mới mở: bấm 1 nút bất kỳ (vd. "Thêm giỏ") → quay lại panel GTM Preview
 4. Tab **Tags** → kiểm tra `Zalo Pixel - Initialize` và `Zalo Pixel - Track Event` đều
    **Fired** ✓, không có tag nào **Not Fired** mà lẽ ra phải fire.
-5. Tab **Variables** → chọn đúng sự kiện `zp_track` trong timeline → xem giá trị thực tế
-   của từng `DLV - zp_*` để đối chiếu với tham số mong đợi (bảng ở `PIXEL-EVENTS.md`).
+5. Tab **Variables** → chọn đúng sự kiện vừa fire (vd. `add_to_cart` hoặc `Contact`) trong
+   timeline → xem giá trị thực tế của từng `DLV - zp_*` để đối chiếu với tham số mong đợi
+   (bảng ở `PIXEL-EVENTS.md`).
 
 ## Bước 7 — Publish + lọc traffic bot
 
@@ -170,12 +189,12 @@ DevTools → tab **Network** → filter `dev-log.adtima.vn`:
 | `GET ztracker.js` | Ngay khi tag Initialize fire (status 200) |
 | `GET /tracklp?type=pageview&pId=...` | Cùng lúc — pageview tự động |
 | `GET /ptrck/events?pixelId=...&url=...` | Cùng lúc — tải config webElement (không liên quan track() của GTM) |
-| `GET /ptrck/log?pId=...&eId=...` | Mỗi lần dataLayer push `zp_track` thành công (Pixel V2: **luôn** fire, không cần tạo conversion trước) |
+| `GET /ptrck/log?pId=...&eId=...` | Mỗi lần dataLayer push 1 trong 17 event thành công (Pixel V2 = kind=5: **luôn** fire, không cần tạo conversion trước) |
 
 Console:
 ```javascript
-window.dataLayer.filter(e => e.event === 'zp_track')
-// → mỗi phần tử có zp_event_name, zp_pixel_id, value, currency, content_id, contents, ...
+window.dataLayer.filter(e => e.zp_event_name)
+// → mỗi phần tử có zp_event_name, value, currency, content_id, contents, ecommerce, ...
 ```
 
 ---

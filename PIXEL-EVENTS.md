@@ -1,8 +1,11 @@
 # Pixel Standard Events — landing-page-v2
 
 > **landing-page-v2 fire qua GTM, không gọi SDK trực tiếp.** Mọi lời gọi `fire(name, params)`
-> dưới đây giờ chỉ `window.dataLayer.push({event:'zp_track', zp_event_name:name, ...params})`
-> — xem `src/hooks/usePixel.js` và `GTM-DATALAYER-GUIDE.md`. Bảng id/class/nội dung bên dưới
+> dưới đây giờ push `window.dataLayer` — theo đúng cách Meta/TikTok Pixel làm qua GTM: 9
+> event có tên chuẩn GA4 tương đương push `event` bằng tên đó (`view_item`, `add_to_cart`,
+> ...) kèm object `ecommerce` lồng nhau; 8 event còn lại push thẳng tên gốc Zalo làm
+> `event`. Field `zp_event_name` (tên gốc Zalo, PascalCase) luôn có mặt ở mọi push — xem
+> `src/hooks/usePixel.js` và `GTM-DATALAYER-GUIDE.md`. Bảng id/class/nội dung bên dưới
 > **không đổi** (UI/component giống hệt bản gốc dùng SDK), chỉ cơ chế fire phía dưới khác.
 
 Ghi lại đầy đủ 17 standard event (theo `STANDARD_EVENT_NAMES` của `adtima-ztracker`,
