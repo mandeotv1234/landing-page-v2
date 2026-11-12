@@ -11,11 +11,11 @@ landing-page-v2 (React)
         └─ window.dataLayer.push({ event: 'zp_track', zp_event_name, zp_pixel_id, ...params })
               └─ GTM Trigger: Custom Event = zp_track
                     └─ GTM Tag: Zalo Pixel — Track Event  (template.tpl, Pixel V2)
-                          └─ ztracker.js → log.adtimaserver.vn/ptrck/log
+                          └─ ztracker.js → dev-log.adtima.vn/ptrck/log
 ```
 
 Việc **duy nhất** code JS làm là push dataLayer — không biết gì về `ztracker.js`,
-`s.zzcdn.me`, hay `log.adtimaserver.vn`. Toàn bộ quyết định "fire cái gì, khi nào" nằm
+`dev-adtima-static.zdn.vn`, hay `dev-log.adtima.vn`. Toàn bộ quyết định "fire cái gì, khi nào" nằm
 trong container GTM, cấu hình qua giao diện, không cần sửa code mỗi khi đổi trigger.
 
 ---
@@ -163,7 +163,7 @@ Mỗi biến: chọn **Data Layer Version 2**.
 
 ## Bước 8 — Verify
 
-DevTools → tab **Network** → filter `adtimaserver.vn`:
+DevTools → tab **Network** → filter `dev-log.adtima.vn`:
 
 | Request | Khi nào xuất hiện |
 |---|---|
@@ -182,6 +182,14 @@ window.dataLayer.filter(e => e.event === 'zp_track')
 
 ## Lưu ý quan trọng
 
+- **Reset field giữa các event (tránh đọc nhầm giá trị cũ).** dataLayer của GTM là 1 model
+  được merge dần qua từng lần push — key không được nhắc tới ở lần push sau **vẫn đọc ra
+  giá trị của lần push trước** (đây là lý do convention ecommerce GA4 luôn
+  `dataLayer.push({ecommerce: null})` trước mỗi event mới). `usePixel.js` đã xử lý việc
+  này: mỗi lần `fire()` đều set `null` cho toàn bộ 10 field chuẩn trước, rồi mới ghi đè bằng
+  params thật — vd. gọi `Contact` ngay sau `AddToCart` sẽ có `currency: null, value: null,
+  content_id: null, quantity: null` tường minh thay vì vô tình giữ số liệu đơn hàng cũ.
+  Nếu bạn thêm field mới vào payload, nhớ thêm luôn vào mảng `PARAM_KEYS` ở đầu file.
 - **Không cấu hình trùng cơ chế.** Nếu một hành động đã được track qua GTM (dataLayer +
   tag Track Event), đừng đồng thời tạo Event Builder webElement rule (id/class/nội dung)
   cho cùng hành động đó trong Zalo Ads Manager — conversion sẽ bị đếm 2 lần. Xem
