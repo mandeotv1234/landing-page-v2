@@ -118,7 +118,10 @@ Zalo (8 event còn lại). Dùng 1 trigger regex gộp hết:
   ```
   ^(view_item|add_to_cart|add_to_wishlist|begin_checkout|add_payment_info|purchase|generate_lead|sign_up|search|Contact|CustomizeProduct|Donate|FindLocation|Schedule|StartTrial|SubmitApplication|Subscribe)$
   ```
-- Kích hoạt trên: Một số sự kiện tùy chỉnh — khớp regex trên
+- Kích hoạt trên: **Tất cả sự kiện tùy chỉnh** (KHÔNG chọn "Một số sự kiện tùy chỉnh" —
+  chọn "Một số" bắt buộc phải thêm 1 điều kiện AND phụ, không cần thiết ở đây. Ô "Tên sự
+  kiện" + regex ở trên đã tự lọc đúng rồi, "Tất cả" vẫn tôn trọng bộ lọc đó, không fire bừa
+  trên mọi custom event)
 - Tên trigger: `Trigger - Zalo Pixel Events`
 
 ## Bước 5 — Tạo Tag
