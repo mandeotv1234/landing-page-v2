@@ -86,8 +86,10 @@ id/class vẫn đầy đủ, chỉ thiếu nội dung:
 - **Không gửi PII thô** (tên/SĐT/email người dùng nhập ở form) lên pixel — các form Lead/
   Register/Subscribe/Apply chỉ gửi metadata mô tả hành động, không gửi giá trị người dùng
   gõ vào input.
-- `contents` là **mảng string tên sản phẩm** (vd. `['ZPhone Pro 15', 'ZBuds Pro 3']`),
-  không phải mảng object `{id, quantity}` — dùng cho `AddToWishlist`, `InitiateCheckout`,
-  `Purchase`. `content_id` (chuỗi id nối dấu phẩy) và `quantity` (tổng số lượng) gửi riêng.
+- `contents` là **chuỗi mã sản phẩm phân cách dấu phẩy** (vd. `'sp001,sp002'`) — đúng theo
+  tài liệu zalo-ads-v2 ("Danh sách mã trang hoặc mã sản phẩm, phân cách bằng dấu phẩy",
+  sự kiện dùng: `AddToWishlist`). Không phải mảng — dùng cho `AddToWishlist`,
+  `InitiateCheckout`, `Purchase`. `content_id` (cùng chuỗi id nối dấu phẩy, dùng ở event
+  khác) và `quantity` (tổng số lượng) gửi riêng.
   Field `contents` trong `template.tpl` là TEXT (gán biến `{{DLV - zp_contents}}`), không
   phải SIMPLE_TABLE — xem `GTM-DATALAYER-GUIDE.md`.

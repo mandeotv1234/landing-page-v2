@@ -79,7 +79,7 @@ tên và version phải khớp chính xác với payload mà `usePixel.js` push:
 | `DLV - zp_content_type` | `content_type` | *(để trống)* |
 | `DLV - zp_quantity` | `quantity` | *(để trống)* |
 | `DLV - zp_query` | `query` | *(để trống — bắt buộc cho `Search`)* |
-| `DLV - zp_contents` | `contents` | *(để trống — mảng string tên sản phẩm)* |
+| `DLV - zp_contents` | `contents` | *(để trống — chuỗi mã sản phẩm phân cách dấu phẩy)* |
 
 Mỗi biến: chọn **Data Layer Version 2**. Không cần biến đọc Pixel ID từ dataLayer — Pixel
 ID luôn lấy từ biến Constant `{{Zalo Pixel ID}}` ở mọi tag, `usePixel.js` không push
@@ -87,9 +87,10 @@ ID luôn lấy từ biến Constant `{{Zalo Pixel ID}}` ở mọi tag, `usePixel
 
 > `contents` là field **TEXT** trong `template.tpl` (không phải SIMPLE_TABLE, SIMPLE_TABLE
 > không gán biến được) — gán thẳng `{{DLV - zp_contents}}` vào field `contents` dưới mục
-> "Custom event parameters" của tag Track Event. `usePixel.js` push `contents` là **mảng
-> string tên sản phẩm** (vd. `['ZPhone Pro 15', 'ZBuds Pro 3']`), không phải mảng object
-> `{id, quantity}` — xem `src/components/Products.jsx`/`CheckoutModal.jsx`.
+> "Custom event parameters" của tag Track Event. `usePixel.js` push `contents` là **chuỗi
+> mã sản phẩm phân cách dấu phẩy** (vd. `'sp001,sp002'`) — đúng theo tài liệu zalo-ads-v2
+> ("Danh sách mã trang hoặc mã sản phẩm, phân cách bằng dấu phẩy") — không phải mảng, xem
+> `src/components/Products.jsx`/`CheckoutModal.jsx`.
 
 > **Giống cách Meta/TikTok Pixel làm qua GTM:** `usePixel.js` push dataLayer `event` bằng
 > **tên chuẩn GA4** cho 9 event có tương đương (`view_item`, `add_to_cart`,
@@ -219,11 +220,12 @@ window.dataLayer.filter(e => e.zp_event_name)
   `PIXEL-EVENTS.md` để biết id/class của từng nút — dùng để cấu hình **Click Trigger**
   trong GTM (`{{Click ID}}` / `{{Click Classes}}` built-in variables), KHÔNG dùng để cấu
   hình thêm Event Builder song song.
-- **`contents` là mảng string tên sản phẩm** (vd. `['ZPhone Pro 15', 'ZBuds Pro 3']`),
-  không phải mảng object `{id, quantity}` — khớp đúng payload thật mà `usePixel.js` push
-  (xem `App.jsx`/`CheckoutModal.jsx`/`Products.jsx` các nơi gọi
-  `fire('Purchase', {... contents: cart.map(i => i.name)})`). `content_id` (chuỗi id nối
-  dấu phẩy) và `quantity` (tổng số lượng) gửi riêng, không nằm trong `contents`.
+- **`contents` là chuỗi mã sản phẩm phân cách dấu phẩy** (vd. `'sp001,sp002'`) — đúng theo
+  tài liệu zalo-ads-v2 ("Danh sách mã trang hoặc mã sản phẩm, phân cách bằng dấu phẩy",
+  sự kiện dùng: `AddToWishlist`). Không phải mảng (list string hay object `{id, quantity}`
+  đều sai) — khớp đúng payload thật mà `usePixel.js` push (xem `App.jsx`/
+  `CheckoutModal.jsx`/`Products.jsx` các nơi gọi
+  `fire('Purchase', {... contents: cart.map(i => i.id).join(',')})`).
 - **Không gửi PII thô** (tên/SĐT/email người dùng nhập ở form) qua dataLayer — xem mục
   cuối `PIXEL-EVENTS.md`.
 - Pixel ID trong **biến Constant `Zalo Pixel ID`** (GTM) phải trùng với `PIXEL_ID` trong

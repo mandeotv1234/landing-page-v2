@@ -36,7 +36,7 @@ export default function Products({ fire, cart, setCart, wishlist, setWishlist })
   const toggleWishlist = (product) => {
     const inWL = wishlist.includes(product.id)
     setWishlist(prev => inWL ? prev.filter(i => i !== product.id) : [...prev, product.id])
-    if (!inWL) fire('AddToWishlist', { content_id: product.id, contents: [product.name] })
+    if (!inWL) fire('AddToWishlist', { content_id: product.id, contents: String(product.id) })
   }
 
   const viewProduct = (product) => {

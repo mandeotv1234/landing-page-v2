@@ -44,10 +44,11 @@ const PARAM_KEYS = [
 
 function buildEcommerce(zaloEventName, params) {
   if (!GA4_EVENT_MAP[zaloEventName]) return null
-  // contents giờ là list string tên sản phẩm (không còn {id, quantity}) — map sang
-  // item_name, không có item_id/quantity riêng từng dòng nữa.
+  // contents là chuỗi mã sản phẩm phân cách dấu phẩy ('401,402' — đúng theo tài liệu
+  // zalo-ads-v2: "Danh sách mã trang hoặc mã sản phẩm, phân cách bằng dấu phẩy"), không
+  // phải mảng — tách ra để map sang item_id cho ecommerce.items.
   const items = params.contents
-    ? params.contents.map((name) => ({ item_name: name }))
+    ? params.contents.split(',').map((id) => ({ item_id: id }))
     : params.content_id
       ? [{ item_id: params.content_id, item_name: params.content_name, quantity: params.quantity ?? 1 }]
       : null

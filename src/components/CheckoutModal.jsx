@@ -9,7 +9,6 @@ export default function CheckoutModal({ cart, onClose, fire }) {
 
   const total = cart.reduce((s, i) => s + i.price * i.qty, 0)
   const contentId = cart.map(i => i.id).join(',')
-  const contentNames = cart.map(i => i.name)
   const totalQuantity = cart.reduce((s, i) => s + i.qty, 0)
 
   // setStep unmounts the step vua submit (swap sang step ke) — defer qua setTimeout(0) de
@@ -32,7 +31,7 @@ export default function CheckoutModal({ cart, onClose, fire }) {
     fire('Purchase', {
       currency: 'VND',
       value: total,
-      contents: contentNames,
+      contents: contentId,
       content_type: 'product',
       content_id: contentId,
       quantity: totalQuantity,
