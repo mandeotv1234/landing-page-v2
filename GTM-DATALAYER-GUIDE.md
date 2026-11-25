@@ -117,7 +117,7 @@ Zalo (8 event còn lại). Dùng 1 trigger regex gộp hết:
 - Loại: **Custom Event**
 - Tên sự kiện: bật **"Sử dụng khớp regex"** (Use regex matching), nhập:
   ```
-  ^(view_item|add_to_cart|add_to_wishlist|begin_checkout|add_payment_info|purchase|generate_lead|sign_up|search|Contact|CustomizeProduct|Donate|FindLocation|Schedule|StartTrial|SubmitApplication|Subscribe)$
+  ^(view_item|add_to_cart|add_to_wishlist|begin_checkout|add_payment_info|purchase|generate_lead|sign_up|search|contact|customize_product|donate|find_location|schedule|start_trial|submit_application|subscribe)$
   ```
 - Kích hoạt trên: **Tất cả sự kiện tùy chỉnh** (KHÔNG chọn "Một số sự kiện tùy chỉnh" —
   chọn "Một số" bắt buộc phải thêm 1 điều kiện AND phụ, không cần thiết ở đây. Ô "Tên sự

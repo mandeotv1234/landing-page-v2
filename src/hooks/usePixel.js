@@ -19,7 +19,19 @@ export const PIXEL_ID = '7525140531349815296'
 // Field phẳng (content_id, value, currency, quantity, contents...) GIỮ NGUYÊN
 // không đổi — tag Zalo Pixel của mình chỉ đọc từ các field phẳng này, không
 // đọc `ecommerce` (field đó chỉ để tool khác dùng sau này).
-const GA4_EVENT_MAP = {
+const GA4_ECOMMERCE_EVENTS = new Set([
+  'ViewContent',
+  'AddToCart',
+  'AddToWishlist',
+  'InitiateCheckout',
+  'AddPaymentInfo',
+  'Purchase',
+  'Lead',
+  'CompleteRegistration',
+  'Search',
+])
+
+const EVENT_MAP = {
   ViewContent: 'view_item',
   AddToCart: 'add_to_cart',
   AddToWishlist: 'add_to_wishlist',
@@ -29,6 +41,14 @@ const GA4_EVENT_MAP = {
   Lead: 'generate_lead',
   CompleteRegistration: 'sign_up',
   Search: 'search',
+  Contact: 'contact',
+  CustomizeProduct: 'customize_product',
+  Donate: 'donate',
+  FindLocation: 'find_location',
+  Schedule: 'schedule',
+  StartTrial: 'start_trial',
+  SubmitApplication: 'submit_application',
+  Subscribe: 'subscribe',
 }
 
 // GTM's dataLayer là 1 model được MERGE qua từng lần push — key không redefine ở lần
@@ -43,7 +63,7 @@ const PARAM_KEYS = [
 ]
 
 function buildEcommerce(zaloEventName, params) {
-  if (!GA4_EVENT_MAP[zaloEventName]) return null
+  if (!GA4_ECOMMERCE_EVENTS.has(zaloEventName)) return null
   // contents là chuỗi mã sản phẩm phân cách dấu phẩy ('401,402' — đúng theo tài liệu
   // zalo-ads-v2: "Danh sách mã trang hoặc mã sản phẩm, phân cách bằng dấu phẩy"), không
   // phải mảng — tách ra để map sang item_id cho ecommerce.items.
@@ -64,7 +84,7 @@ export function usePixel() {
     window.dataLayer = window.dataLayer || []
     const reset = Object.fromEntries(PARAM_KEYS.map((key) => [key, null]))
     window.dataLayer.push({
-      event: GA4_EVENT_MAP[zaloEventName] || zaloEventName,
+      event: EVENT_MAP[zaloEventName] || zaloEventName,
       zp_event_name: zaloEventName,
       ...reset,
       ...params,
