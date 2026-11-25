@@ -49,6 +49,7 @@ const EVENT_MAP = {
   StartTrial: 'start_trial',
   SubmitApplication: 'submit_application',
   Subscribe: 'subscribe',
+  DownloadBrochure: 'download_brochure',
 }
 
 // GTM's dataLayer là 1 model được MERGE qua từng lần push — key không redefine ở lần

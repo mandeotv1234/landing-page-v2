@@ -1,13 +1,24 @@
 import { useState } from 'react'
-import { ChevronRight, Play, Star } from 'lucide-react'
+import { ChevronRight, Download, Play, Star } from 'lucide-react'
 
 export default function Hero({ fire }) {
   const [trialDone, setTrialDone] = useState(false)
+  const [brochureDone, setBrochureDone] = useState(false)
 
   const handleStartTrial = () => {
     fire('StartTrial', { content_id: 'trial-zphone-pro-15', content_name: 'Dùng thử 30 ngày' })
     setTrialDone(true)
     setTimeout(() => setTrialDone(false), 3000)
+  }
+
+  const handleDownloadBrochure = () => {
+    fire('DownloadBrochure', {
+      content_id: 'ztech-brochure-2026',
+      content_name: 'Bảng giá & Brochure ZTech 2026',
+      content_type: 'product_group',
+    })
+    setBrochureDone(true)
+    setTimeout(() => setBrochureDone(false), 3000)
   }
 
   return (
@@ -49,6 +60,14 @@ export default function Hero({ fire }) {
             >
               <Play size={16} />
               {trialDone ? '✓ Đã đăng ký!' : 'Dùng thử 30 ngày'}
+            </button>
+            <button
+              id="btn-download-brochure"
+              onClick={handleDownloadBrochure}
+              className={`btn-download-brochure inline-flex items-center justify-center gap-2 border border-cyan-400/40 hover:border-cyan-300 text-cyan-200 px-6 py-3 rounded-xl transition-all ${brochureDone ? 'bg-cyan-600/30 border-cyan-400' : ''}`}
+            >
+              <Download size={16} />
+              {brochureDone ? '✓ Đã tải Brochure!' : 'Tải Brochure'}
             </button>
           </div>
 
